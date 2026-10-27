@@ -1,160 +1,160 @@
+import { useState } from 'react';
+import { IconContext } from "react-icons";
+import {
+  LuBriefcaseBusiness,
+  LuCalendarDays,
+  LuMapPin,
+  LuExternalLink,
+  LuGithub,
+  LuMenu,
+  LuX,
+} from 'react-icons/lu';
+import Skills from './Skills';
+import HangingBadge from './components/HangingBadge';
+import ProjectVideoPlayer from './components/ProjectVideoPlayer';
+import ProjectModal from './components/ProjectModal';
+import PortfolioChatbot from './components/PortfolioChatbot';
+import {
+  loadProjectsFromStorage,
+  saveProjectsToStorage,
+  resetProjectsStorage,
+} from './utils/videoStorage';
+
 export default function Portfolio() {
-  const flowerStyle = `
-    .flower-animation {
-      position: relative;
-      width: 500px;
-      height: 500px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255,255,255,0.12), transparent 60%);
-      animation: rotateFlower 20s linear infinite;
-      filter: blur(0.5px);
-    }
+  const [activeSection, setActiveSection] = useState('about');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [projectsList, setProjectsList] = useState(() => loadProjectsFromStorage());
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
 
-    .flower-animation::before,
-    .flower-animation::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      border: 1px solid rgba(255,255,255,0.15);
-      animation: pulseFlower 6s ease-in-out infinite;
-    }
+  const navItems = [
+    ['about', 'About'],
+    ['skills', 'Skills'],
+    ['experience', 'Experience'],
+    ['projects', 'Projects'],
+    ['contact', 'Contact'],
+  ];
 
-    .flower-animation::after {
-      transform: rotate(45deg);
-      animation-delay: 2s;
-    }
-
-    @keyframes rotateFlower {
-      from {
-        transform: rotate(0deg) scale(1);
-      }
-      to {
-        transform: rotate(360deg) scale(1.05);
-      }
-    }
-
-    @keyframes pulseFlower {
-      0%, 100% {
-        transform: scale(1);
-        opacity: 0.4;
-      }
-      50% {
-        transform: scale(1.15);
-        opacity: 1;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .flower-animation {
-        width: 280px;
-        height: 280px;
-      }
-    }
-  `;
-
-  const skills = {
-    Frontend: ['React.js', 'JavaScript', 'HTML5', 'CSS3', 'Responsive Design'],
-    Backend: ['Node.js', 'Express.js', 'Python', 'Django', 'REST APIs'],
-    Database: ['MySQL', 'PostgreSQL', 'Schema Design', 'Query Optimization'],
-    Tools: ['Git & GitHub', 'VS Code', 'Postman', 'API Integration'],
+  const handleOpenAdd = () => {
+    setEditingProject(null);
+    setModalOpen(true);
   };
 
-  const projects = [
-    {
-      title: 'Kidzofi',
-      description:
-        'Developed and maintained features for an educational platform with responsive UI, scalable backend integration, and user-focused functionality.',
-      link: 'https://www.kidzofi.com/',
-    },
-    {
-      title: 'B2B E-commerce Platform',
-      description:
-        'Worked on a production-level B2B e-commerce platform with authentication, order workflows, payment integration, and shipment tracking.',
-      link: 'https://www.befach.com/en',
-    },
-    {
-      title: 'URL Shortener Application',
-      description:
-        'Developed a URL shortening application with analytics and optimized redirects using Node.js and MySQL.',
-    },
-    {
-      title: 'Food Delivery App',
-      description:
-        'Built a responsive frontend application with dynamic menus, search functionality, and shopping cart features.',
-      link: 'https://food-del-rosy-five.vercel.app/categories.html',
-    },
-  ];
+  const handleSaveProject = (projectData) => {
+    let updated;
+    const exists = projectsList.some((p) => p.id === projectData.id);
+    if (exists) {
+      updated = projectsList.map((p) => (p.id === projectData.id ? projectData : p));
+    } else {
+      updated = [projectData, ...projectsList];
+    }
+    setProjectsList(updated);
+    saveProjectsToStorage(updated);
+  };
+
+  const handleVideoChange = (projectId, newVideoSrc) => {
+    const updated = projectsList.map((p) =>
+      p.id === projectId ? { ...p, video: newVideoSrc } : p
+    );
+    setProjectsList(updated);
+    saveProjectsToStorage(updated);
+  };
+
+  const handleResetDefaults = async () => {
+    if (window.confirm('Reset all projects back to default showcase projects?')) {
+      const defaults = await resetProjectsStorage();
+      setProjectsList([...defaults]);
+    }
+  };
 
   return (
     <>
-      <style>{flowerStyle}</style>
-
-      <div className="min-h-screen bg-black text-white overflow-x-hidden selection:bg-white selection:text-black">
+      <div className="portfolio-shell min-h-screen bg-black text-white overflow-x-hidden selection:bg-blue-500 selection:text-white">
         {/* Navigation */}
-        <nav className="sticky top-0 z-50 bg-black/90 backdrop-blur-xl border-b border-white/10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-            <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-wide">
-              Mohd Irfan
-            </h1>
-
-            <div className="hidden md:flex gap-8 text-sm text-gray-300 font-medium">
-              <a href="#about" className="hover:text-white transition">
-                About
-              </a>
-              <a href="#skills" className="hover:text-white transition">
-                Skills
-              </a>
-              <a href="#experience" className="hover:text-white transition">
-                Experience
-              </a>
-              <a href="#projects" className="hover:text-white transition">
-                Projects
-              </a>
-              <a href="#contact" className="hover:text-white transition">
-                Contact
-              </a>
+        <nav className="sticky top-0 z-50 border-b border-slate-700/80 bg-black">
+          <div className="mx-auto flex min-h-[76px] max-w-[1500px] items-center justify-between px-4 sm:min-h-[88px] sm:px-10 lg:px-16">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                Mohd Irfan
+              </h1>
             </div>
+
+            <div className="hidden items-center gap-5 text-base font-semibold text-gray-300 sm:flex sm:gap-7 lg:gap-9 lg:text-lg">
+              {navItems.map(([id, label]) => {
+                const isActive = activeSection === id;
+
+                return (
+                  <a
+                    key={id}
+                    href={`#${id}`}
+                    aria-current={isActive ? 'location' : undefined}
+                    onClick={() => setActiveSection(id)}
+                    className={`border-b-[3px] px-2 py-3 transition-colors ${
+                      isActive
+                        ? 'border-sky-500 text-sky-400'
+                        : 'border-transparent hover:border-sky-500 hover:text-white'
+                    }`}
+                  >
+                    {label}
+                  </a>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              className="rounded-lg border border-white/20 px-3 py-2 text-sm font-semibold text-gray-200 transition hover:border-sky-500 hover:text-sky-300 sm:hidden"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation"
+              onClick={() => setMobileMenuOpen((open) => !open)}
+            >
+              {mobileMenuOpen ? (
+                <LuX className="h-5 w-5" />
+              ) : (
+                <LuMenu className="h-5 w-5" />
+              )}
+              <span className="sr-only">{mobileMenuOpen ? 'Close menu' : 'Open menu'}</span>
+            </button>
           </div>
+          {mobileMenuOpen && (
+            <div id="mobile-navigation" className="border-t border-white/10 px-4 py-3 sm:hidden">
+              <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-semibold text-gray-300">
+                {navItems.map(([id, label]) => {
+                  const isActive = activeSection === id;
+
+                  return (
+                    <a
+                      key={id}
+                      href={`#${id}`}
+                      aria-current={isActive ? 'location' : undefined}
+                      onClick={() => {
+                        setActiveSection(id);
+                        setMobileMenuOpen(false);
+                      }}
+                      className={isActive ? 'text-sky-400' : 'hover:text-white'}
+                    >
+                      {label}
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </nav>
 
         {/* Hero */}
-        <section className="relative py-16 sm:py-20 md:py-24 px-4 sm:px-6 overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center opacity-40 pointer-events-none">
-            <div className="flower-animation"></div>
-          </div>
+        <section className="relative min-h-[calc(100svh-72px)] flex items-start md:items-center px-4 sm:px-6 pt-16 pb-12 sm:py-20 overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_12%_8%,rgba(0,112,255,0.16),transparent_38%)]" />
 
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_40%)]"></div>
-
-          <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-10 md:gap-16 items-center relative z-10">
-            <div>
-              <p className="text-sm tracking-[0.3em] uppercase text-gray-500 mb-4">
+          <div className="relative z-10 mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 md:grid-cols-[minmax(0,1fr)_auto] md:gap-16 lg:gap-24">
+            <div className="text-center md:text-left">
+              <h2 className="text-[clamp(2.5rem,10vw,8rem)] font-black leading-[0.95] tracking-[-0.06em] md:text-[clamp(3.5rem,8vw,8rem)]">
+                Mohd <span className="text-blue-500">Irfan</span>
+              </h2>
+              <p className="mt-3 text-[clamp(1.25rem,6vw,3.5rem)] font-bold leading-tight tracking-[-0.035em] text-gray-200 sm:mt-7 md:text-[clamp(1.7rem,4vw,3.5rem)]">
                 Full Stack Developer
               </p>
-
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-black leading-tight mb-6">
-                Building Modern
-                <span className="block text-gray-400">
-                  Web Experiences
-                </span>
-              </h1>
-
-              <p className="text-base sm:text-lg text-gray-400 leading-7 sm:leading-8 max-w-2xl">
-                Full Stack Developer with experience building scalable B2B
-                e-commerce platforms and real-time systems using Python,
-                Django, Node.js, Express.js, React, MySQL, and PostgreSQL.
-              </p>
             </div>
-
-            <div className="flex justify-center">
-              <div className="relative w-56 h-56 sm:w-72 sm:h-72 md:w-96 md:h-96 rounded-full border border-white/10 bg-gradient-to-br from-gray-900 to-black flex items-center justify-center shadow-[0_0_80px_rgba(255,255,255,0.08)]">
-                <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.15),transparent_60%)]"></div>
-
-                <h2 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-widest text-white/90 relative z-10">
-                  MI
-                </h2>
-              </div>
-            </div>
+            <HangingBadge className="mx-auto md:mx-0" />
           </div>
         </section>
 
@@ -177,143 +177,205 @@ export default function Portfolio() {
         </section>
 
         {/* Skills */}
-        <section id="skills" className="py-16 sm:py-20 px-4 sm:px-6">
-          <div className="max-w-7xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-center mb-14">
-              Technical Skills
-            </h2>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-              {Object.entries(skills).map(([category, items]) => (
-                <div
-                  key={category}
-                  className="group relative bg-[#050505] backdrop-blur-xl p-5 sm:p-7 rounded-[28px] border border-white/10 overflow-hidden transition-all duration-500 hover:-translate-y-3 hover:border-white/20 hover:shadow-[0_0_40px_rgba(255,255,255,0.12)]"
-                >
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12),transparent_45%)] opacity-0 group-hover:opacity-100 transition duration-500"></div>
-
-                  <h3 className="text-xl sm:text-2xl font-bold mb-6 relative z-10">
-                    {category}
-                  </h3>
-
-                  <ul className="space-y-4 relative z-10">
-                    {items.map((item) => (
-                      <li
-                        key={item}
-                        className="flex items-center gap-3 text-gray-400 group-hover:text-gray-200 transition duration-300"
-                      >
-                        <span className="w-2 h-2 rounded-full bg-white"></span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        <IconContext.Provider value={{ color: "blue", className: "global-class-name", size: "2em" }}>
+          <Skills />
+        </IconContext.Provider>
 
         {/* Experience */}
         <section id="experience" className="py-16 sm:py-20 px-4 sm:px-6">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-center mb-14">
+          <div className="experience-section relative max-w-6xl mx-auto">
+            <div className="experience-dots" aria-hidden="true" />
+            <h2 className="text-3xl sm:text-4xl font-bold text-center mb-3">
               Experience
             </h2>
+            <p className="text-center text-gray-400 mb-12">
+              A timeline of my professional journey
+            </p>
 
-            <div className="bg-[#050505] border border-white/10 rounded-[24px] sm:rounded-[32px] p-5 sm:p-8 md:p-10 hover:border-white/20 transition duration-300">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-                <div>
-                  <h3 className="text-2xl sm:text-3xl font-bold mb-2">
+            <div className="relative grid grid-cols-[24px_minmax(0,1fr)] gap-3 sm:grid-cols-[160px_minmax(0,1fr)] sm:gap-8">
+              <div className="absolute left-[23px] top-5 bottom-5 w-px bg-gradient-to-b from-blue-400 via-blue-500/70 to-transparent sm:left-[159px]" />
+
+              <div className="relative pt-5 text-right text-xs sm:pr-6 sm:text-sm leading-5 text-blue-300">
+                <span className="hidden font-semibold sm:inline">Jun 10, 2026</span>
+                <br />
+                <span className="hidden text-gray-400 sm:inline">- Present</span>
+                <span className="experience-timeline-dot absolute right-[-7px] top-7 z-10 h-4 w-4 rounded-full bg-blue-500 ring-4 ring-blue-500/15 shadow-[0_0_16px_rgba(0,112,255,0.8)]" />
+              </div>
+
+              <article className="relative min-w-0 overflow-hidden rounded-2xl border border-blue-500/40 bg-[#05090f] p-4 sm:p-7 shadow-[0_0_20px_rgba(0,112,255,0.08)] transition duration-300 hover:border-blue-400/70 hover:shadow-[0_0_30px_rgba(0,112,255,0.16)]">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(0,112,255,0.12),transparent_48%)]" />
+                <div className="relative">
+                  <p className="mb-2 text-xs font-medium text-gray-400 sm:hidden">
+                    Jun 10, 2026 - Present
+                  </p>
+                  <h3 className="text-xl sm:text-2xl font-bold mb-1">
+                    Full Stack Developer
+                  </h3>
+                  <p className="text-blue-400 font-semibold text-base sm:text-lg mb-4">
+                    Teketreeinc
+                  </p>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-300">
+                    <span className="inline-flex items-center gap-2">
+                      <LuMapPin className="h-4 w-4 text-blue-300" aria-hidden="true" />
+                      Hyderabad, India
+                    </span>
+                    <span className="hidden sm:block h-4 w-px bg-gray-600" />
+                    <span className="inline-flex items-center gap-2">
+                      <LuBriefcaseBusiness className="h-4 w-4 text-blue-300" aria-hidden="true" />
+                      Full-time
+                    </span>
+                    <span className="hidden sm:block h-4 w-px bg-gray-600" />
+                    <span className="inline-flex items-center gap-2">
+                      <LuCalendarDays className="h-4 w-4 text-blue-300" aria-hidden="true" />
+                      Jun 10, 2026 - Present
+                    </span>
+                  </div>
+                </div>
+              </article>
+
+              <div className="relative pt-5 text-right text-xs sm:pr-6 sm:text-sm leading-5 text-blue-300">
+                <span className="hidden font-semibold sm:inline">Jun 23, 2025</span>
+                <br />
+                <span className="hidden text-gray-400 sm:inline">- May 31, 2026</span>
+                <span className="experience-timeline-dot absolute right-[-7px] top-7 z-10 h-4 w-4 rounded-full bg-blue-500 ring-4 ring-blue-500/15 shadow-[0_0_16px_rgba(0,112,255,0.8)]" />
+              </div>
+
+              <article className="relative min-w-0 overflow-hidden rounded-2xl border border-blue-500/40 bg-[#05090f] p-4 sm:p-7 shadow-[0_0_20px_rgba(0,112,255,0.08)] transition duration-300 hover:border-blue-400/70 hover:shadow-[0_0_30px_rgba(0,112,255,0.16)]">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(0,112,255,0.12),transparent_48%)]" />
+                <div className="relative">
+                  <p className="mb-2 text-xs font-medium text-gray-400 sm:hidden">
+                    Jun 23, 2025 - May 31, 2026
+                  </p>
+                  <h3 className="text-xl sm:text-2xl font-bold mb-1">
                     Backend Developer
                   </h3>
-
-                  <p className="text-gray-400 text-lg">
+                  <p className="text-blue-400 font-semibold text-base sm:text-lg mb-4">
                     Befach International
                   </p>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-300">
+                    <span className="inline-flex items-center gap-2">
+                      <LuMapPin className="h-4 w-4 text-blue-300" aria-hidden="true" />
+                      Hyderabad, India
+                    </span>
+                    <span className="hidden sm:block h-4 w-px bg-gray-600" />
+                    <span className="inline-flex items-center gap-2">
+                      <LuBriefcaseBusiness className="h-4 w-4 text-blue-300" aria-hidden="true" />
+                      Full-time
+                    </span>
+                    <span className="hidden sm:block h-4 w-px bg-gray-600" />
+                    <span className="inline-flex items-center gap-2">
+                      <LuCalendarDays className="h-4 w-4 text-blue-300" aria-hidden="true" />
+                      Jun 23, 2025 - May 31, 2026
+                    </span>
+                  </div>
                 </div>
-
-                <span className="text-gray-500">Oct 2025 - Present</span>
-              </div>
-
-              <div className="grid gap-5 text-gray-400">
-                <div className="flex gap-4">
-                  <span className="w-2 h-2 rounded-full bg-white mt-3"></span>
-
-                  <p>
-                    Developed scalable backend services and REST APIs for a B2B
-                    e-commerce platform.
-                  </p>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="w-2 h-2 rounded-full bg-white mt-3"></span>
-
-                  <p>
-                    Built real-time shipment tracking features integrated with
-                    third-party logistics APIs.
-                  </p>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="w-2 h-2 rounded-full bg-white mt-3"></span>
-
-                  <p>
-                    Managed MySQL and PostgreSQL databases with optimized
-                    queries.
-                  </p>
-                </div>
-
-                <div className="flex gap-4">
-                  <span className="w-2 h-2 rounded-full bg-white mt-3"></span>
-
-                  <p>
-                    Worked on authentication, order processing, and product
-                    management modules.
-                  </p>
-                </div>
-              </div>
+              </article>
             </div>
           </div>
         </section>
 
         {/* Projects */}
-        <section id="projects" className="py-16 sm:py-20 px-4 sm:px-6">
+        <section id="projects" className="py-16 sm:py-24 px-4 sm:px-6">
           <div className="max-w-7xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold text-center mb-14">
-              Projects
-            </h2>
+            {/* Header and Controls */}
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-5">
+              <div>
+                <h2 className="text-3xl sm:text-5xl font-black tracking-tight">
+                  Projects
+                </h2>
+                <p className="mt-2 text-sm sm:text-base text-gray-400 max-w-xl">
+                  Explore production applications with autoplay video previews, technology stacks, and direct project links.
+                </p>
+              </div>
 
-            <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
-              {projects.map((project) => (
-                <div
-                  key={project.title}
-                  className="group relative bg-[#050505] backdrop-blur-xl p-5 sm:p-8 rounded-[24px] sm:rounded-[28px] border border-white/10 overflow-hidden transition-all duration-500 hover:-translate-y-3 hover:border-white/20 hover:shadow-[0_0_40px_rgba(255,255,255,0.12)]"
+            </div>
+
+            {/* Grid of Projects */}
+            <div className="grid md:grid-cols-2 gap-8 lg:gap-10">
+              {projectsList.map((project) => (
+                <article
+                  key={project.id || project.title}
+                  className="group relative flex flex-col bg-[#070b13] backdrop-blur-xl rounded-[28px] border border-blue-500/20 overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:border-blue-400/50 hover:shadow-[0_0_40px_rgba(0,112,255,0.18)]"
                 >
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12),transparent_45%)] opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                  {/* Subtle Background Glow */}
+                  <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,112,255,0.12),transparent_60%)] opacity-70 group-hover:opacity-100 transition duration-500" />
 
-                  <div className="relative z-10">
-                    <h3 className="text-xl sm:text-2xl font-bold mb-4">
-                      {project.title}
-                    </h3>
+                  {/* Autoplay Video Player */}
+                  <div className="relative p-3 pb-0">
+                    <ProjectVideoPlayer
+                      project={project}
+                      onVideoChange={(newSrc) => handleVideoChange(project.id, newSrc)}
+                    />
+                  </div>
 
-                    <p className="text-sm sm:text-base text-gray-400 leading-7 sm:leading-8 mb-6">
+                  {/* Card Body */}
+                  <div className="relative z-10 flex flex-1 flex-col p-6 sm:p-7">
+                    {/* Header: Title and Management Buttons */}
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white group-hover:text-sky-300 transition-colors">
+                        {project.title}
+                      </h3>
+                    </div>
+
+                    {/* Tech Stack Pills */}
+                    {project.tags && project.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mb-4">
+                        {project.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-full bg-blue-950/60 border border-blue-500/25 px-2.5 py-0.5 text-xs font-medium text-sky-300"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Description */}
+                    <p className="flex-1 text-sm sm:text-base text-gray-300/90 leading-relaxed mb-6">
                       {project.description}
                     </p>
 
-                    {project.link && (
-                      <a
-                        href={project.link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="border border-white/20 bg-white/5 px-4 py-2 rounded-full text-sm hover:bg-white hover:text-black transition duration-300"
-                      >
-                        Visit Project
-                      </a>
-                    )}
+                    {/* Action Links */}
+                    <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-white/10 mt-auto">
+                      {project.link && (
+                        <a
+                          href={project.link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-sky-500 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-[0_0_15px_rgba(0,112,255,0.3)] hover:from-blue-500 hover:to-sky-400 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                        >
+                          <span>Visit Project</span>
+                          <LuExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                      )}
+
+                      {project.github && (
+                        <a
+                          href={project.github}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/5 px-3.5 py-2 text-xs sm:text-sm font-medium text-gray-200 hover:bg-white hover:text-black transition duration-300 cursor-pointer"
+                        >
+                          <LuGithub className="h-4 w-4" />
+                          <span>Code</span>
+                        </a>
+                      )}
+
+                    </div>
                   </div>
-                </div>
+                </article>
               ))}
             </div>
           </div>
+
+          {/* Project Modal (Add / Edit) */}
+          <ProjectModal
+            isOpen={modalOpen}
+            initialData={editingProject}
+            onClose={() => setModalOpen(false)}
+            onSave={handleSaveProject}
+          />
         </section>
 
         {/* Contact */}
@@ -337,7 +399,7 @@ export default function Portfolio() {
               </a>
 
               <a
-                href="https://github.com/123irf#-hi-there-im-mohd-irfan--web-developer"
+                href="https://github.com/irfan-developer-max/developer-portfolio"
                 target="_blank"
                 rel="noreferrer"
                 className="relative z-50 w-full sm:w-auto text-center px-6 sm:px-7 py-3 rounded-2xl border border-white/20 hover:bg-white hover:text-black transition duration-300 cursor-pointer"
@@ -361,6 +423,9 @@ export default function Portfolio() {
             </div>
           </div>
         </section>
+
+        {/* AI Assistant Chatbot */}
+        <PortfolioChatbot />
       </div>
     </>
   );

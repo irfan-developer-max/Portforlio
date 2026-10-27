@@ -1,1 +1,177 @@
 @import "tailwindcss";
+
+.portfolio-shell {
+  isolation: isolate;
+}
+
+.portfolio-shell > section {
+  position: relative;
+  z-index: 2;
+}
+
+@property --skill-shine-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.skill-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--skill-shine-angle),
+    transparent 0deg 285deg,
+    rgba(48, 161, 255, 0.22) 300deg,
+    rgba(100, 198, 255, 1) 325deg,
+    rgba(48, 161, 255, 0.22) 345deg,
+    transparent 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: skill-border-shine 5s linear infinite;
+}
+
+@keyframes skill-border-shine {
+  from {
+    --skill-shine-angle: 0deg;
+  }
+
+  to {
+    --skill-shine-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skill-card::after {
+    animation: none;
+  }
+}
+
+.experience-dots {
+  position: absolute;
+  top: 1.25rem;
+  right: 0.25rem;
+  width: 5rem;
+  height: 5rem;
+  pointer-events: none;
+  opacity: 0.55;
+  background-image: radial-gradient(circle, rgba(30, 144, 255, 0.8) 1px, transparent 1.5px);
+  background-size: 12px 12px;
+  mask-image: radial-gradient(ellipse, black 20%, transparent 75%);
+  animation: experience-dots-drift 5s ease-in-out infinite alternate;
+}
+
+.experience-timeline-dot {
+  animation: experience-dot-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes experience-dots-drift {
+  from {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+
+  to {
+    transform: translateY(8px);
+    opacity: 0.8;
+  }
+}
+
+@keyframes experience-dot-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(0, 112, 255, 0.55), 0 0 0 4px rgba(0, 112, 255, 0.12);
+  }
+
+  50% {
+    box-shadow: 0 0 19px rgba(0, 145, 255, 0.95), 0 0 0 7px rgba(0, 112, 255, 0.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .experience-dots,
+  .experience-timeline-dot {
+    animation: none;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes gradientPan {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.22s ease-out forwards;
+}
+
+.animate-scaleUp {
+  animation: scaleUp 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-gradient {
+  animation: gradientPan 6s ease infinite;
+}
+
+/* Hanging ID Card Lanyard Sway */
+.hanging-badge-card {
+  animation: lanyard-hang-sway 5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+@keyframes lanyard-hang-sway {
+  0% {
+    transform: perspective(1100px) rotateZ(0deg) rotateY(0deg) translateY(0);
+  }
+  25% {
+    transform: perspective(1100px) rotateZ(3.2deg) rotateY(4deg) translateY(-2px);
+  }
+  50% {
+    transform: perspective(1100px) rotateZ(0deg) rotateY(0deg) translateY(0);
+  }
+  75% {
+    transform: perspective(1100px) rotateZ(-3.2deg) rotateY(-4deg) translateY(-2px);
+  }
+  100% {
+    transform: perspective(1100px) rotateZ(0deg) rotateY(0deg) translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hanging-badge-card {
+    animation: none;
+  }
+}
+

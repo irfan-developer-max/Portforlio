@@ -6,6 +6,6 @@ import Portfolio from './Portfolio'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-   <Portfolio/>
+    <Portfolio/>
   </StrictMode>,
 )
